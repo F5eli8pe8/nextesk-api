@@ -8,7 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/tasks/{taskId}/subtasks")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = {"http://localhost:3000", "https://nextesk-web.vercel.app"})
 public class SubTaskController {
 
     private final SubTaskService subTaskService;

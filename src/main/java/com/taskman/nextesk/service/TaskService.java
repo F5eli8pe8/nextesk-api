@@ -1,7 +1,10 @@
 package com.taskman.nextesk.service;
 
 import com.taskman.nextesk.model.Task;
+import com.taskman.nextesk.model.User;
 import com.taskman.nextesk.repository.TaskRepository;
+import com.taskman.nextesk.repository.UserRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -9,21 +12,34 @@ import java.util.List;
 public class TaskService {
 
     private final TaskRepository taskRepository;
+    private final UserRepository userRepository;
 
-    public TaskService(TaskRepository taskRepository) {
+    public TaskService(TaskRepository taskRepository, UserRepository userRepository) {
         this.taskRepository = taskRepository;
+        this.userRepository = userRepository;
+    }
+
+    private User getCurrentUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
     }
 
     public List<Task> findAll() {
-        return taskRepository.findAll();
+        return taskRepository.findByUser(getCurrentUser());
     }
 
     public Task findById(Long id) {
-        return taskRepository.findById(id)
+        Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tarefa não encontrada"));
+        if (!task.getUser().getId().equals(getCurrentUser().getId())) {
+            throw new RuntimeException("Acesso negado");
+        }
+        return task;
     }
 
     public Task save(Task task) {
+        task.setUser(getCurrentUser());
         return taskRepository.save(task);
     }
 
@@ -36,6 +52,7 @@ public class TaskService {
     }
 
     public void delete(Long id) {
+        findById(id);
         taskRepository.deleteById(id);
     }
 }

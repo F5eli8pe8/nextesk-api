@@ -29,4 +29,9 @@ public class Task {
     @JsonManagedReference
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
     private java.util.List<SubTask> subTasks = new java.util.ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    @com.fasterxml.jackson.annotation.JsonBackReference
+    private User user;
 }
